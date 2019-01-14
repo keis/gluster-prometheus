@@ -135,6 +135,40 @@ func volumeCounts(gluster glusterutils.GInterface) error {
 	return nil
 }
 
+type glusterVolumeCounts struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterVolumeCounts) GetName() string {
+	return "gluster_volume_counts"
+}
+
+func (c *glusterVolumeCounts) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterVolumeCounts) Describe(ch chan<- *prometheus.Desc) {
+	glusterVolumeTotalCount.Describe(ch)
+	glusterVolumeCreatedCount.Describe(ch)
+	glusterVolumeStartedCount.Describe(ch)
+	glusterVolumeBrickCount.Describe(ch)
+	glusterVolumeSnapshotBrickCountTotal.Describe(ch)
+	glusterVolumeSnapshotBrickCountActive.Describe(ch)
+	glusterVolumeUp.Describe(ch)
+}
+
+func (c *glusterVolumeCounts) Collect(ch chan<- prometheus.Metric) {
+	glusterVolumeTotalCount.Collect(ch)
+	glusterVolumeCreatedCount.Collect(ch)
+	glusterVolumeStartedCount.Collect(ch)
+	glusterVolumeBrickCount.Collect(ch)
+	glusterVolumeSnapshotBrickCountTotal.Collect(ch)
+	glusterVolumeSnapshotBrickCountActive.Collect(ch)
+	glusterVolumeUp.Collect(ch)
+}
+
 func init() {
+	col := glusterVolumeCounts{}
+	registerCollector(&col)
 	registerMetric("gluster_volume_counts", volumeCounts)
 }

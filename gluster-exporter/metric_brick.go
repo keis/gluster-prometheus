@@ -741,7 +741,85 @@ func brickStatus(gluster glusterutils.GInterface) error {
 	return nil
 }
 
+type glusterBrick struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterBrick) GetName() string {
+	return "gluster_brick"
+}
+
+func (c *glusterBrick) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterBrick) Describe(ch chan<- *prometheus.Desc) {
+	glusterBrickCapacityUsed.Describe(ch)
+	glusterBrickCapacityFree.Describe(ch)
+	glusterBrickCapacityTotal.Describe(ch)
+	glusterBrickInodesTotal.Describe(ch)
+	glusterBrickInodesFree.Describe(ch)
+	glusterBrickInodesUsed.Describe(ch)
+	glusterSubvolCapacityUsed.Describe(ch)
+	glusterSubvolCapacityTotal.Describe(ch)
+	glusterBrickLVSize.Describe(ch)
+	glusterBrickLVPercent.Describe(ch)
+	glusterBrickLVMetadataSize.Describe(ch)
+	glusterBrickLVMetadataPercent.Describe(ch)
+	glusterVGExtentTotal.Describe(ch)
+	glusterVGExtentAlloc.Describe(ch)
+	glusterThinPoolDataTotal.Describe(ch)
+	glusterThinPoolDataUsed.Describe(ch)
+	glusterThinPoolMetadataTotal.Describe(ch)
+	glusterThinPoolMetadataUsed.Describe(ch)
+}
+
+func (*glusterBrick) Collect(ch chan<- prometheus.Metric) {
+	glusterBrickCapacityUsed.Collect(ch)
+	glusterBrickCapacityFree.Collect(ch)
+	glusterBrickCapacityTotal.Collect(ch)
+	glusterBrickInodesTotal.Collect(ch)
+	glusterBrickInodesFree.Collect(ch)
+	glusterBrickInodesUsed.Collect(ch)
+	glusterSubvolCapacityUsed.Collect(ch)
+	glusterSubvolCapacityTotal.Collect(ch)
+	glusterBrickLVSize.Collect(ch)
+	glusterBrickLVPercent.Collect(ch)
+	glusterBrickLVMetadataSize.Collect(ch)
+	glusterBrickLVMetadataPercent.Collect(ch)
+	glusterVGExtentTotal.Collect(ch)
+	glusterVGExtentAlloc.Collect(ch)
+	glusterThinPoolDataTotal.Collect(ch)
+	glusterThinPoolDataUsed.Collect(ch)
+	glusterThinPoolMetadataTotal.Collect(ch)
+	glusterThinPoolMetadataUsed.Collect(ch)
+}
+
+type glusterBrickStatus struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterBrickStatus) GetName() string {
+	return "gluster_brick_status"
+}
+
+func (c *glusterBrickStatus) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterBrickStatus) Describe(ch chan<- *prometheus.Desc) {
+	glusterBrickUp.Describe(ch)
+}
+
+func (*glusterBrickStatus) Collect(ch chan<- prometheus.Metric) {
+	glusterBrickUp.Collect(ch)
+}
+
 func init() {
+	col := glusterBrick{}
+	statuscol := glusterBrickStatus{}
+	registerCollector(&col)
+	registerCollector(&statuscol)
 	registerMetric("gluster_brick", brickUtilization)
 	registerMetric("gluster_brick_status", brickStatus)
 }

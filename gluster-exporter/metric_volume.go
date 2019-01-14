@@ -434,7 +434,81 @@ func profileInfo(gluster glusterutils.GInterface) error {
 	return nil
 }
 
+type glusterVolumeHeal struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterVolumeHeal) GetName() string {
+	return "gluster_volume_heal"
+}
+
+func (c *glusterVolumeHeal) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterVolumeHeal) Describe(ch chan<- *prometheus.Desc) {
+	glusterVolumeHealCount.Describe(ch)
+}
+
+func (c *glusterVolumeHeal) Collect(ch chan<- prometheus.Metric) {
+	glusterVolumeHealCount.Collect(ch)
+}
+
+type glusterVolumeProfile struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterVolumeProfile) GetName() string {
+	return "gluster_volume_profile"
+}
+
+func (c *glusterVolumeProfile) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterVolumeProfile) Describe(ch chan<- *prometheus.Desc) {
+	glusterVolumeProfileTotalReads.Describe(ch)
+	glusterVolumeProfileTotalWrites.Describe(ch)
+	glusterVolumeProfileDuration.Describe(ch)
+	glusterVolumeProfileTotalReadsInt.Describe(ch)
+	glusterVolumeProfileTotalWritesInt.Describe(ch)
+	glusterVolumeProfileDurationInt.Describe(ch)
+	glusterVolumeProfileFopHits.Describe(ch)
+	glusterVolumeProfileFopAvgLatency.Describe(ch)
+	glusterVolumeProfileFopMinLatency.Describe(ch)
+	glusterVolumeProfileFopMaxLatency.Describe(ch)
+	glusterVolumeProfileFopHitsInt.Describe(ch)
+	glusterVolumeProfileFopAvgLatencyInt.Describe(ch)
+	glusterVolumeProfileFopMinLatencyInt.Describe(ch)
+	glusterVolumeProfileFopMaxLatencyInt.Describe(ch)
+	glusterVolumeProfileFopTotalHitsAggregatedOps.Describe(ch)
+	glusterVolumeProfileFopTotalHitsAggregatedOpsInt.Describe(ch)
+}
+
+func (c *glusterVolumeProfile) Collect(ch chan<- prometheus.Metric) {
+	glusterVolumeProfileTotalReads.Collect(ch)
+	glusterVolumeProfileTotalWrites.Collect(ch)
+	glusterVolumeProfileDuration.Collect(ch)
+	glusterVolumeProfileTotalReadsInt.Collect(ch)
+	glusterVolumeProfileTotalWritesInt.Collect(ch)
+	glusterVolumeProfileDurationInt.Collect(ch)
+	glusterVolumeProfileFopHits.Collect(ch)
+	glusterVolumeProfileFopAvgLatency.Collect(ch)
+	glusterVolumeProfileFopMinLatency.Collect(ch)
+	glusterVolumeProfileFopMaxLatency.Collect(ch)
+	glusterVolumeProfileFopHitsInt.Collect(ch)
+	glusterVolumeProfileFopAvgLatencyInt.Collect(ch)
+	glusterVolumeProfileFopMinLatencyInt.Collect(ch)
+	glusterVolumeProfileFopMaxLatencyInt.Collect(ch)
+	glusterVolumeProfileFopTotalHitsAggregatedOps.Collect(ch)
+	glusterVolumeProfileFopTotalHitsAggregatedOpsInt.Collect(ch)
+}
+
 func init() {
+	healcol := glusterVolumeHeal{}
+	profilecol := glusterVolumeProfile{}
+	registerCollector(&healcol)
+	registerCollector(&profilecol)
 	registerMetric("gluster_volume_heal", healCounts)
 	registerMetric("gluster_volume_profile", profileInfo)
 }

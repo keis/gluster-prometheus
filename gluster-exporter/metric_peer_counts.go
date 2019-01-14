@@ -205,6 +205,34 @@ func peerCounts(gluster glusterutils.GInterface) (err error) {
 	return
 }
 
+type glusterPeerCounts struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterPeerCounts) GetName() string {
+	return "gluster_peer_counts"
+}
+
+func (c *glusterPeerCounts) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterPeerCounts) Describe(ch chan<- *prometheus.Desc) {
+	glusterPVCount.Describe(ch)
+	glusterLVCount.Describe(ch)
+	glusterVGCount.Describe(ch)
+	glusterTPCount.Describe(ch)
+}
+
+func (c *glusterPeerCounts) Collect(ch chan<- prometheus.Metric) {
+	glusterPVCount.Collect(ch)
+	glusterLVCount.Collect(ch)
+	glusterVGCount.Collect(ch)
+	glusterTPCount.Collect(ch)
+}
+
 func init() {
+	col := glusterPeerCounts{}
+	registerCollector(&col)
 	registerMetric("gluster_peer_counts", peerCounts)
 }

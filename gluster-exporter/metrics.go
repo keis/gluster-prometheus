@@ -42,9 +42,6 @@ func newPrometheusGaugeVec(m Metric) *prometheus.GaugeVec {
 		m.LabelNames(),
 	)
 
-	// Register the metric with Prometheus
-	prometheus.MustRegister(gaugeVec)
-
 	// Add the metric to the global queue
 	metrics = append(metrics, m)
 

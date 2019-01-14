@@ -275,6 +275,36 @@ func ps(gluster glusterutils.GInterface) error {
 	return nil
 }
 
+type glusterPs struct {
+	gi glusterutils.GInterface
+}
+
+func (*glusterPs) GetName() string {
+	return "gluster_ps"
+}
+
+func (c *glusterPs) SetGluster(gi glusterutils.GInterface) {
+	c.gi = gi
+}
+
+func (*glusterPs) Describe(ch chan<- *prometheus.Desc) {
+	glusterCPUPercentage.Describe(ch)
+	glusterMemoryPercentage.Describe(ch)
+	glusterResidentMemory.Describe(ch)
+	glusterVirtualMemory.Describe(ch)
+	glusterElapsedTime.Describe(ch)
+}
+
+func (*glusterPs) Collect(ch chan<- prometheus.Metric) {
+	glusterCPUPercentage.Collect(ch)
+	glusterMemoryPercentage.Collect(ch)
+	glusterResidentMemory.Collect(ch)
+	glusterVirtualMemory.Collect(ch)
+	glusterElapsedTime.Collect(ch)
+}
+
 func init() {
+	col := glusterPs{}
+	registerCollector(&col)
 	registerMetric("gluster_ps", ps)
 }

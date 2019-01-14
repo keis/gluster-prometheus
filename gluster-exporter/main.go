@@ -13,6 +13,7 @@ import (
 	"github.com/gluster/gluster-prometheus/pkg/glusterutils"
 	"github.com/gluster/gluster-prometheus/pkg/logging"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
@@ -43,6 +44,19 @@ var glusterMetrics []glusterMetric
 
 func registerMetric(name string, fn func(glusterutils.GInterface) error) {
 	glusterMetrics = append(glusterMetrics, glusterMetric{name: name, fn: fn})
+}
+
+type glusterCollector interface {
+	GetName() string
+	SetGluster(glusterutils.GInterface)
+	Describe(chan<- *prometheus.Desc)
+	Collect(chan<- prometheus.Metric)
+}
+
+var glusterCollectors []glusterCollector
+
+func registerCollector(col glusterCollector) {
+	glusterCollectors = append(glusterCollectors, col)
 }
 
 func dumpVersionInfo() {
@@ -136,6 +150,15 @@ func main() {
 						time.Sleep(time.Second * interval)
 					}
 				}(m, gluster)
+			}
+		}
+	}
+
+	for _, c := range glusterCollectors {
+		if collectorConf, ok := exporterConf.CollectorsConf[c.GetName()]; ok {
+			if !collectorConf.Disabled {
+				c.SetGluster(gluster)
+				prometheus.MustRegister(c)
 			}
 		}
 	}
