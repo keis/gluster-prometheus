@@ -48,4 +48,13 @@ func newPrometheusGaugeVec(m Metric) *prometheus.GaugeVec {
 	return gaugeVec
 }
 
+func newPrometheusDesc(m Metric) *prometheus.Desc {
+	return prometheus.NewDesc(
+		prometheus.BuildFQName(m.Namespace, "", m.Name),
+		m.Help,
+		m.LabelNames(),
+		nil,
+	)
+}
+
 var metrics []Metric
