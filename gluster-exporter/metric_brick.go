@@ -92,6 +92,10 @@ var (
 			Help: "Volume Name",
 		},
 		{
+			Name: "subvolume",
+			Help: "SubVolume Name",
+		},
+		{
 			Name: "hostname",
 			Help: "Host name or IP",
 		},
@@ -772,14 +776,26 @@ func brickUtilization(gluster glusterutils.GInterface, ch chan<- prometheus.Metr
 	return nil
 }
 
-func getBrickStatusLabels(vol string, host string, brickPath string, peerID string, pid int) []string {
+func getBrickStatusLabels(vol string, subvol string, host string, brickPath string, peerID string, pid int) []string {
 	return []string{
 		vol,
+		subvol,
 		host,
 		brickPath,
 		peerID,
 		strconv.Itoa(pid),
 	}
+}
+
+func subVolumeByBrickStatus(subvs []glusterutils.SubVolume, bs glusterutils.BrickStatus) glusterutils.SubVolume {
+	for _, subvol := range subvs {
+		for _, brick := range subvol.Bricks {
+			if brick.Host == bs.Hostname && brick.Path == bs.Path && brick.VolumeName == bs.Volume {
+				return subvol
+			}
+		}
+	}
+	return glusterutils.SubVolume{}
 }
 
 func brickStatus(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
@@ -823,7 +839,8 @@ func brickStatus(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) e
 			}
 		}
 		for _, entry := range brickStatus {
-			labels := getBrickStatusLabels(volume.Name, entry.Hostname, entry.Path, entry.PeerID, entry.PID)
+			subvol := subVolumeByBrickStatus(volume.SubVolumes, entry)
+			labels := getBrickStatusLabels(volume.Name, subvol.Name, entry.Hostname, entry.Path, entry.PeerID, entry.PID)
 			ch <- prometheus.MustNewConstMetric(
 				glusterBrickUp,
 				prometheus.CounterValue,
