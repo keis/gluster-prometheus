@@ -84,6 +84,10 @@ var (
 			Name: "lv_uuid",
 			Help: "UUID of LV",
 		},
+		{
+			Name: "lv_device",
+			Help: "LV Device",
+		},
 	}
 
 	brickStatusLbls = []MetricLabel{
@@ -523,6 +527,7 @@ func getGlusterLVMLabels(brick glusterutils.Brick, subvol string, stat LVMStat) 
 		stat.VGName,
 		stat.Path,
 		stat.UUID,
+		stat.Device,
 	}
 }
 
