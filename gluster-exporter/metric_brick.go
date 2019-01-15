@@ -537,6 +537,13 @@ func getGlusterThinPoolLabels(brick glusterutils.Brick, vol string, subvol strin
 	}
 }
 
+func isHier(path string) bool {
+	return map[string]bool{
+		"/":    true,
+		"/var": true,
+	}[path]
+}
+
 func lvmUsage(path string) (stats []LVMStat, thinPoolStats []ThinPoolStat, err error) {
 	mountPoints, err := parseProcMounts()
 	if err != nil {
@@ -549,6 +556,9 @@ func lvmUsage(path string) (stats []LVMStat, thinPoolStats []ThinPoolStat, err e
 	}
 	for _, lv := range lvs {
 		for _, mount := range mountPoints {
+			if isHier(mount.Name) {
+				continue
+			}
 			dev, err := filepath.EvalSymlinks(mount.Device)
 			if err != nil {
 				log.WithError(err).WithFields(log.Fields{
