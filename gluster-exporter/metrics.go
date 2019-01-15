@@ -49,6 +49,9 @@ func newPrometheusGaugeVec(m Metric) *prometheus.GaugeVec {
 }
 
 func newPrometheusDesc(m Metric) *prometheus.Desc {
+	// Add the metric to the global queue
+	metrics = append(metrics, m)
+
 	return prometheus.NewDesc(
 		prometheus.BuildFQName(m.Namespace, "", m.Name),
 		m.Help,
