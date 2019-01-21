@@ -25,13 +25,16 @@ var (
 		},
 	}
 
+	// healCountGVecs collects all the GaugeVec-s for heal count metrics
+	healCountGVecs []*prometheus.GaugeVec
+
 	glusterVolumeHealCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "volume_heal_count",
 		Help:      "self heal count for volume",
 		LongHelp:  "",
 		Labels:    volumeHealLabels,
-	})
+	}, &healCountGVecs)
 
 	volumeProfileInfoLabels = []MetricLabel{
 		{
@@ -44,13 +47,16 @@ var (
 		},
 	}
 
+	// volProfGVecs collects all the GaugeVec-s for volume profile metrics
+	volProfGVecs []*prometheus.GaugeVec
+
 	glusterVolumeProfileTotalReads = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "volume_profile_total_reads",
 		Help:      "Total no of reads",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileTotalWrites = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -58,7 +64,7 @@ var (
 		Help:      "Total no of writes",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileDuration = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -66,7 +72,7 @@ var (
 		Help:      "Duration",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileTotalReadsInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -74,7 +80,7 @@ var (
 		Help:      "Total no of reads for interval stats",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileTotalWritesInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -82,7 +88,7 @@ var (
 		Help:      "Total no of writes for interval stats",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileDurationInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -90,7 +96,7 @@ var (
 		Help:      "Duration for interval stats",
 		LongHelp:  "",
 		Labels:    volumeProfileInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	volumeProfileFopInfoLabels = []MetricLabel{
 		{
@@ -117,7 +123,7 @@ var (
 		Help:      "Cumulative FOP hits",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopAvgLatency = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -125,7 +131,7 @@ var (
 		Help:      "Cumulative FOP avergae latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopMinLatency = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -133,7 +139,7 @@ var (
 		Help:      "Cumulative FOP min latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopMaxLatency = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -141,7 +147,7 @@ var (
 		Help:      "Cumulative FOP max latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopHitsInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -149,7 +155,7 @@ var (
 		Help:      "Interval based FOP hits",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopAvgLatencyInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -157,7 +163,7 @@ var (
 		Help:      "Interval based FOP average latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopMinLatencyInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -165,7 +171,7 @@ var (
 		Help:      "Interval based FOP min latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopMaxLatencyInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -173,7 +179,7 @@ var (
 		Help:      "Interval based FOP max latency",
 		LongHelp:  "",
 		Labels:    volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopTotalHitsAggregatedOps = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -182,7 +188,7 @@ var (
 			" like READ_WRIET_OPS, LOCK_OPS, INODE_OPS etc",
 		LongHelp: "",
 		Labels:   volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 
 	glusterVolumeProfileFopTotalHitsAggregatedOpsInt = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -191,7 +197,7 @@ var (
 			" like READ_WRIET_OPS, LOCK_OPS, INODE_OPS etc",
 		LongHelp: "",
 		Labels:   volumeProfileFopInfoLabels,
-	})
+	}, &volProfGVecs)
 )
 
 // opType represents aggregated operations like
@@ -434,81 +440,9 @@ func profileInfo(gluster glusterutils.GInterface) error {
 	return nil
 }
 
-type glusterVolumeHeal struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterVolumeHeal) GetName() string {
-	return "gluster_volume_heal"
-}
-
-func (c *glusterVolumeHeal) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterVolumeHeal) Describe(ch chan<- *prometheus.Desc) {
-	glusterVolumeHealCount.Describe(ch)
-}
-
-func (c *glusterVolumeHeal) Collect(ch chan<- prometheus.Metric) {
-	glusterVolumeHealCount.Collect(ch)
-}
-
-type glusterVolumeProfile struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterVolumeProfile) GetName() string {
-	return "gluster_volume_profile"
-}
-
-func (c *glusterVolumeProfile) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterVolumeProfile) Describe(ch chan<- *prometheus.Desc) {
-	glusterVolumeProfileTotalReads.Describe(ch)
-	glusterVolumeProfileTotalWrites.Describe(ch)
-	glusterVolumeProfileDuration.Describe(ch)
-	glusterVolumeProfileTotalReadsInt.Describe(ch)
-	glusterVolumeProfileTotalWritesInt.Describe(ch)
-	glusterVolumeProfileDurationInt.Describe(ch)
-	glusterVolumeProfileFopHits.Describe(ch)
-	glusterVolumeProfileFopAvgLatency.Describe(ch)
-	glusterVolumeProfileFopMinLatency.Describe(ch)
-	glusterVolumeProfileFopMaxLatency.Describe(ch)
-	glusterVolumeProfileFopHitsInt.Describe(ch)
-	glusterVolumeProfileFopAvgLatencyInt.Describe(ch)
-	glusterVolumeProfileFopMinLatencyInt.Describe(ch)
-	glusterVolumeProfileFopMaxLatencyInt.Describe(ch)
-	glusterVolumeProfileFopTotalHitsAggregatedOps.Describe(ch)
-	glusterVolumeProfileFopTotalHitsAggregatedOpsInt.Describe(ch)
-}
-
-func (c *glusterVolumeProfile) Collect(ch chan<- prometheus.Metric) {
-	glusterVolumeProfileTotalReads.Collect(ch)
-	glusterVolumeProfileTotalWrites.Collect(ch)
-	glusterVolumeProfileDuration.Collect(ch)
-	glusterVolumeProfileTotalReadsInt.Collect(ch)
-	glusterVolumeProfileTotalWritesInt.Collect(ch)
-	glusterVolumeProfileDurationInt.Collect(ch)
-	glusterVolumeProfileFopHits.Collect(ch)
-	glusterVolumeProfileFopAvgLatency.Collect(ch)
-	glusterVolumeProfileFopMinLatency.Collect(ch)
-	glusterVolumeProfileFopMaxLatency.Collect(ch)
-	glusterVolumeProfileFopHitsInt.Collect(ch)
-	glusterVolumeProfileFopAvgLatencyInt.Collect(ch)
-	glusterVolumeProfileFopMinLatencyInt.Collect(ch)
-	glusterVolumeProfileFopMaxLatencyInt.Collect(ch)
-	glusterVolumeProfileFopTotalHitsAggregatedOps.Collect(ch)
-	glusterVolumeProfileFopTotalHitsAggregatedOpsInt.Collect(ch)
-}
-
 func init() {
-	healcol := glusterVolumeHeal{}
-	profilecol := glusterVolumeProfile{}
-	registerCollector(&healcol)
-	registerCollector(&profilecol)
-	registerMetric("gluster_volume_heal", healCounts)
-	registerMetric("gluster_volume_profile", profileInfo)
+	healGMP := newGMetricCollectGenProvider("gluster_volume_heal", healCounts, healCountGVecs)
+	registerNewGMetricGenProvider(healGMP)
+	profileGMP := newGMetricCollectGenProvider("gluster_volume_profile", profileInfo, volProfGVecs)
+	registerNewGMetricGenProvider(profileGMP)
 }

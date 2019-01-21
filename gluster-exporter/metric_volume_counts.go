@@ -15,13 +15,16 @@ var (
 		},
 	}
 
+	// volCountsGVecs collects all the GaugeVec-s needed for volume_counts metrics
+	volCountsGVecs []*prometheus.GaugeVec
+
 	glusterVolumeTotalCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "volume_total_count",
 		Help:      "Total no of volumes",
 		LongHelp:  "",
 		Labels:    []MetricLabel{},
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeCreatedCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -29,7 +32,7 @@ var (
 		Help:      "Freshly created no of volumes",
 		LongHelp:  "",
 		Labels:    []MetricLabel{},
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeStartedCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -37,7 +40,7 @@ var (
 		Help:      "Total no of started volumes",
 		LongHelp:  "",
 		Labels:    []MetricLabel{},
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeBrickCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -45,7 +48,7 @@ var (
 		Help:      "Total no of bricks in volume",
 		LongHelp:  "",
 		Labels:    volumeLabels,
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeSnapshotBrickCountTotal = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -53,7 +56,7 @@ var (
 		Help:      "Total count of snapshots bricks for volume",
 		LongHelp:  "",
 		Labels:    volumeLabels,
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeSnapshotBrickCountActive = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -61,7 +64,7 @@ var (
 		Help:      "Total active count of snapshots bricks for volume",
 		LongHelp:  "",
 		Labels:    volumeLabels,
-	})
+	}, &volCountsGVecs)
 
 	glusterVolumeUp = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
@@ -69,7 +72,7 @@ var (
 		Help:      "Volume is started or not (1-started, 0-not started)",
 		LongHelp:  "",
 		Labels:    volumeLabels,
-	})
+	}, &volCountsGVecs)
 )
 
 func getVolumeLabels(volname string) prometheus.Labels {
@@ -135,40 +138,7 @@ func volumeCounts(gluster glusterutils.GInterface) error {
 	return nil
 }
 
-type glusterVolumeCounts struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterVolumeCounts) GetName() string {
-	return "gluster_volume_counts"
-}
-
-func (c *glusterVolumeCounts) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterVolumeCounts) Describe(ch chan<- *prometheus.Desc) {
-	glusterVolumeTotalCount.Describe(ch)
-	glusterVolumeCreatedCount.Describe(ch)
-	glusterVolumeStartedCount.Describe(ch)
-	glusterVolumeBrickCount.Describe(ch)
-	glusterVolumeSnapshotBrickCountTotal.Describe(ch)
-	glusterVolumeSnapshotBrickCountActive.Describe(ch)
-	glusterVolumeUp.Describe(ch)
-}
-
-func (c *glusterVolumeCounts) Collect(ch chan<- prometheus.Metric) {
-	glusterVolumeTotalCount.Collect(ch)
-	glusterVolumeCreatedCount.Collect(ch)
-	glusterVolumeStartedCount.Collect(ch)
-	glusterVolumeBrickCount.Collect(ch)
-	glusterVolumeSnapshotBrickCountTotal.Collect(ch)
-	glusterVolumeSnapshotBrickCountActive.Collect(ch)
-	glusterVolumeUp.Collect(ch)
-}
-
 func init() {
-	col := glusterVolumeCounts{}
-	registerCollector(&col)
-	registerMetric("gluster_volume_counts", volumeCounts)
+	gmp := newGMetricCollectGenProvider("gluster_volume_counts", volumeCounts, volCountsGVecs)
+	registerNewGMetricGenProvider(gmp)
 }

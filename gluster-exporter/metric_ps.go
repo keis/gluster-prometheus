@@ -40,13 +40,16 @@ var (
 		},
 	}
 
+	// psDescs collects all the 'Desc'-s for ps metrics
+	psDescs []*prometheus.Desc
+
 	glusterCPUPercentage = newPrometheusDesc(Metric{
 		Namespace: "gluster",
 		Name:      "cpu_percentage",
 		Help:      "CPU Percentage used by Gluster processes",
 		LongHelp:  "CPU percentage of Gluster process. One metric will be exposed for each process. Note: values of labels will be empty if not applicable to that process. For example, glusterd process will not have labels for volume or brick_path. It is the CPU time used divided by the time the process has been running (cputime/realtime ratio), expressed as a percentage.",
 		Labels:    labels,
-	})
+	}, &psDescs)
 
 	glusterMemoryPercentage = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -54,7 +57,7 @@ var (
 		Help:      "Memory Percentage used by Gluster processes",
 		LongHelp:  "Memory percentage of Gluster process. One metric will be exposed for each process. Note: values of labels will be empty if not applicable to that process. For example, glusterd process will not have labels for volume or brick_path. It is the ratio of the process's resident set size to the physical memory on the machine, expressed as a percentage",
 		Labels:    labels,
-	})
+	}, &psDescs)
 
 	glusterResidentMemory = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -62,7 +65,7 @@ var (
 		Help:      "Resident Memory of Gluster processes in bytes",
 		LongHelp:  "Resident Memory of Gluster process in bytes. One metric will be exposed for each process. Note: values of labels will be empty if not applicable to that process. For example, glusterd process will not have labels for volume or brick_path.",
 		Labels:    labels,
-	})
+	}, &psDescs)
 
 	glusterVirtualMemory = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -70,7 +73,7 @@ var (
 		Help:      "Virtual Memory of Gluster processes in bytes",
 		LongHelp:  "Virtual Memory of Gluster process in bytes. One metric will be exposed for each process. Note: values of labels will be empty if not applicable to that process. For example, glusterd process will not have labels for volume or brick_path.",
 		Labels:    labels,
-	})
+	}, &psDescs)
 
 	glusterElapsedTime = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -78,7 +81,7 @@ var (
 		Help:      "Elapsed Time of Gluster processes in seconds",
 		LongHelp:  "Elapsed Time or Uptime of Gluster processes in seconds. One metric will be exposed for each process. Note: values of labels will be empty if not applicable to that process. For example, glusterd process will not have labels for volume or brick_path.",
 		Labels:    labels,
-	})
+	}, &psDescs)
 )
 
 func getCmdLine(pid string) ([]string, error) {
@@ -92,16 +95,16 @@ func getCmdLine(pid string) ([]string, error) {
 	return strings.Split(strings.Trim(string(out), "\x00"), "\x00"), nil
 }
 
-func getGlusterdLabels(peerID, cmd string, args []string) ([]string, error) {
-	return []string{
-		"",
-		peerID,
-		"",
-		cmd,
-	}, nil
+func getGlusterdLabels(peerID, cmd string, args []string) prometheus.Labels {
+	return prometheus.Labels{
+		"name":       cmd,
+		"volume":     "",
+		"peerid":     peerID,
+		"brick_path": "",
+	}
 }
 
-func getGlusterFsdLabels(peerID, cmd string, args []string) ([]string, error) {
+func getGlusterFsdLabels(peerID, cmd string, args []string) prometheus.Labels {
 	bpath := ""
 	volume := ""
 
@@ -116,24 +119,24 @@ func getGlusterFsdLabels(peerID, cmd string, args []string) ([]string, error) {
 		prevArg = a
 	}
 
-	return []string{
-		volume,
-		peerID,
-		bpath,
-		cmd,
-	}, nil
+	return prometheus.Labels{
+		"name":       cmd,
+		"volume":     volume,
+		"peerid":     peerID,
+		"brick_path": bpath,
+	}
 }
 
-func getUnknownLabels(peerID, cmd string, args []string) ([]string, error) {
-	return []string{
-		"",
-		peerID,
-		"",
-		cmd,
-	}, nil
+func getUnknownLabels(peerID, cmd string, args []string) prometheus.Labels {
+	return prometheus.Labels{
+		"name":       cmd,
+		"volume":     "",
+		"peerid":     peerID,
+		"brick_path": "",
+	}
 }
 
-func ps(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
+func ps(gluster glusterutils.GInterface) ([]prometheus.Metric, error) {
 	args := []string{
 		"--no-header", // No header in the output
 		"-ww",         // To set unlimited width to avoid crop
@@ -147,14 +150,15 @@ func ps(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
 
 	if err != nil {
 		// Return without exporting metrics in this cycle
-		return err
+		return nil, err
 	}
 
 	peerID, err := gluster.LocalPeerID()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
+	var metricArr []prometheus.Metric
 	for _, line := range strings.Split(string(out), "\n") {
 		// Sample data:
 		// 6959  0.0  0.6 12840 713660  504076 glusterfs
@@ -184,34 +188,19 @@ func ps(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
 			continue
 		}
 
-		var lbls []string
+		var lbls prometheus.Labels
 		switch lineData[6] {
 		case "glusterd":
-			lbls, err = getGlusterdLabels(peerID, lineData[6], cmdlineArgs)
-			if err != nil {
-				log.WithError(err).Error("Unable to get glusterd labels")
-				continue
-			}
+			lbls = getGlusterdLabels(peerID, lineData[6], cmdlineArgs)
 		case "glusterd2":
-			lbls, err = getGlusterdLabels(peerID, lineData[6], cmdlineArgs)
-			if err != nil {
-				log.WithError(err).Error("Unable to get glusterd2 labels")
-				continue
-			}
+			lbls = getGlusterdLabels(peerID, lineData[6], cmdlineArgs)
 		case "glusterfsd":
-			lbls, err = getGlusterFsdLabels(peerID, lineData[6], cmdlineArgs)
-			if err != nil {
-				log.WithError(err).Error("Unable to get glusterfsd labels")
-				continue
-			}
+			lbls = getGlusterFsdLabels(peerID, lineData[6], cmdlineArgs)
 		default:
-			lbls, err = getUnknownLabels(peerID, lineData[6], cmdlineArgs)
-			if err != nil {
-				log.WithError(err).Error("Unable to get default labels")
-				continue
-			}
+			lbls = getUnknownLabels(peerID, lineData[6], cmdlineArgs)
 		}
 
+		vals := MLabels(labels).ValuesInOrder(lbls)
 		pcpu, err := strconv.ParseFloat(lineData[1], 64)
 		if err != nil {
 			log.WithError(err).WithFields(log.Fields{
@@ -266,67 +255,41 @@ func ps(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
 		rsz = rsz * 1024
 
 		// Update the Metrics
-		ch <- prometheus.MustNewConstMetric(
+		metricArr = append(metricArr, prometheus.MustNewConstMetric(
 			glusterCPUPercentage,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			pcpu,
-			lbls...,
-		)
-		ch <- prometheus.MustNewConstMetric(
+			vals...,
+		))
+		metricArr = append(metricArr, prometheus.MustNewConstMetric(
 			glusterMemoryPercentage,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			pmem,
-			lbls...,
-		)
-		ch <- prometheus.MustNewConstMetric(
+			vals...,
+		))
+		metricArr = append(metricArr, prometheus.MustNewConstMetric(
 			glusterResidentMemory,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			rsz,
-			lbls...,
-		)
-		ch <- prometheus.MustNewConstMetric(
+			vals...,
+		))
+		metricArr = append(metricArr, prometheus.MustNewConstMetric(
 			glusterVirtualMemory,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			vsz,
-			lbls...,
-		)
-		ch <- prometheus.MustNewConstMetric(
+			vals...,
+		))
+		metricArr = append(metricArr, prometheus.MustNewConstMetric(
 			glusterElapsedTime,
-			prometheus.CounterValue,
+			prometheus.GaugeValue,
 			etimes,
-			lbls...,
-		)
+			vals...,
+		))
 	}
-	return nil
-}
-
-type glusterPs struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterPs) GetName() string {
-	return "gluster_ps"
-}
-
-func (c *glusterPs) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterPs) Describe(ch chan<- *prometheus.Desc) {
-	ch <- glusterCPUPercentage
-	ch <- glusterMemoryPercentage
-	ch <- glusterResidentMemory
-	ch <- glusterVirtualMemory
-	ch <- glusterElapsedTime
-}
-
-func (c *glusterPs) Collect(ch chan<- prometheus.Metric) {
-	if err := ps(c.gi, ch); err != nil {
-		log.WithError(err).Warn("failed to get process info")
-	}
+	return metricArr, nil
 }
 
 func init() {
-	col := glusterPs{}
-	registerCollector(&col)
+	gmPs := newGMetricGenProvider("gluster_ps", ps, psDescs)
+	registerNewGMetricGenProvider(gmPs)
 }

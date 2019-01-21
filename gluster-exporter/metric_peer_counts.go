@@ -127,34 +127,37 @@ var (
 		},
 	}
 
+	// peerCountGVecs collects all the GaugeVec-s needed for peer_count metrics
+	peerCountGVecs []*prometheus.GaugeVec
+
 	glusterPVCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "pv_count",
 		Help:      "No: of Physical Volumes",
 		LongHelp:  "",
 		Labels:    gnrlMetricLabels,
-	})
+	}, &peerCountGVecs)
 	glusterLVCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "lv_count",
 		Help:      "No: of Logical Volumes in a Volume Group",
 		LongHelp:  "",
 		Labels:    withVgMetricLabels,
-	})
+	}, &peerCountGVecs)
 	glusterVGCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "vg_count",
 		Help:      "No: of Volume Groups",
 		LongHelp:  "",
 		Labels:    gnrlMetricLabels,
-	})
+	}, &peerCountGVecs)
 	glusterTPCount = newPrometheusGaugeVec(Metric{
 		Namespace: "gluster",
 		Name:      "thinpool_count",
 		Help:      "No: of thinpools in a Volume Group",
 		LongHelp:  "",
 		Labels:    withVgMetricLabels,
-	})
+	}, &peerCountGVecs)
 )
 
 func peerCounts(gluster glusterutils.GInterface) (err error) {
@@ -205,34 +208,7 @@ func peerCounts(gluster glusterutils.GInterface) (err error) {
 	return
 }
 
-type glusterPeerCounts struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterPeerCounts) GetName() string {
-	return "gluster_peer_counts"
-}
-
-func (c *glusterPeerCounts) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterPeerCounts) Describe(ch chan<- *prometheus.Desc) {
-	glusterPVCount.Describe(ch)
-	glusterLVCount.Describe(ch)
-	glusterVGCount.Describe(ch)
-	glusterTPCount.Describe(ch)
-}
-
-func (c *glusterPeerCounts) Collect(ch chan<- prometheus.Metric) {
-	glusterPVCount.Collect(ch)
-	glusterLVCount.Collect(ch)
-	glusterVGCount.Collect(ch)
-	glusterTPCount.Collect(ch)
-}
-
 func init() {
-	col := glusterPeerCounts{}
-	registerCollector(&col)
-	registerMetric("gluster_peer_counts", peerCounts)
+	gmPeerCounts := newGMetricCollectGenProvider("gluster_peer_counts", peerCounts, peerCountGVecs)
+	registerNewGMetricGenProvider(gmPeerCounts)
 }

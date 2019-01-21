@@ -136,13 +136,18 @@ var (
 		},
 	}
 
+	// brickDescs collects all the brick metric 'Desc'-s
+	brickDescs []*prometheus.Desc
+	// brickStatusDescs collects all the brick status metric 'Desc'-s
+	brickStatusDescs []*prometheus.Desc
+
 	glusterBrickCapacityUsed = newPrometheusDesc(Metric{
 		Namespace: "gluster",
 		Name:      "brick_capacity_used_bytes",
 		Help:      "Used capacity of gluster bricks in bytes",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickCapacityFree = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -150,7 +155,7 @@ var (
 		Help:      "Free capacity of gluster bricks in bytes",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickCapacityTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -158,7 +163,7 @@ var (
 		Help:      "Total capacity of gluster bricks in bytes",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickInodesTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -166,7 +171,7 @@ var (
 		Help:      "Total no of inodes of gluster brick disk",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickInodesFree = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -174,7 +179,7 @@ var (
 		Help:      "Free no of inodes of gluster brick disk",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickInodesUsed = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -182,7 +187,7 @@ var (
 		Help:      "Used no of inodes of gluster brick disk",
 		LongHelp:  "",
 		Labels:    brickLabels,
-	})
+	}, &brickDescs)
 
 	glusterSubvolCapacityUsed = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -190,7 +195,7 @@ var (
 		Help:      "Effective used capacity of gluster subvolume in bytes",
 		LongHelp:  "",
 		Labels:    subvolLabels,
-	})
+	}, &brickDescs)
 
 	glusterSubvolCapacityTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -198,7 +203,7 @@ var (
 		Help:      "Effective total capacity of gluster subvolume in bytes",
 		LongHelp:  "",
 		Labels:    subvolLabels,
-	})
+	}, &brickDescs)
 
 	glusterBrickLVSize = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -206,7 +211,7 @@ var (
 		Help:      "Bricks LV size Bytes",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterBrickLVPercent = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -214,7 +219,7 @@ var (
 		Help:      "Bricks LV usage percent",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterBrickLVMetadataSize = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -222,7 +227,7 @@ var (
 		Help:      "Bricks LV metadata size Bytes",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterBrickLVMetadataPercent = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -230,7 +235,7 @@ var (
 		Help:      "Bricks LV metadata usage percent",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterVGExtentTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -238,7 +243,7 @@ var (
 		Help:      "VG extent total count ",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterVGExtentAlloc = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -246,7 +251,7 @@ var (
 		Help:      "VG extent allocated count ",
 		LongHelp:  "",
 		Labels:    lvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterThinPoolDataTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -254,7 +259,7 @@ var (
 		Help:      "Thin pool size Bytes",
 		LongHelp:  "",
 		Labels:    thinLvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterThinPoolDataUsed = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -262,7 +267,7 @@ var (
 		Help:      "Thin pool data used Bytes",
 		LongHelp:  "",
 		Labels:    thinLvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterThinPoolMetadataTotal = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -270,7 +275,7 @@ var (
 		Help:      "Thin pool metadata size Bytes",
 		LongHelp:  "",
 		Labels:    thinLvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterThinPoolMetadataUsed = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -278,7 +283,7 @@ var (
 		Help:      "Thin pool metadata used Bytes",
 		LongHelp:  "",
 		Labels:    thinLvmLbls,
-	})
+	}, &brickDescs)
 
 	glusterBrickUp = newPrometheusDesc(Metric{
 		Namespace: "gluster",
@@ -286,23 +291,23 @@ var (
 		Help:      "Brick up (1-up, 0-down)",
 		LongHelp:  "",
 		Labels:    brickStatusLbls,
-	})
+	}, &brickStatusDescs)
 )
 
-func getGlusterBrickLabels(brick glusterutils.Brick, subvol string) []string {
-	return []string{
-		brick.Host,
-		brick.ID,
-		brick.Path,
-		brick.VolumeName,
-		subvol,
+func getGlusterBrickLabels(brick glusterutils.Brick, subvol string) prometheus.Labels {
+	return prometheus.Labels{
+		"host":       brick.Host,
+		"id":         brick.ID,
+		"brick_path": brick.Path,
+		"volume":     brick.VolumeName,
+		"subvolume":  subvol,
 	}
 }
 
-func getGlusterSubvolLabels(volname string, subvol string) []string {
-	return []string{
-		volname,
-		subvol,
+func getGlusterSubvolLabels(volname string, subvol string) prometheus.Labels {
+	return prometheus.Labels{
+		"volume":    volname,
+		"subvolume": subvol,
 	}
 }
 
@@ -509,27 +514,29 @@ func parseProcMounts() ([]ProcMounts, error) {
 	return procMounts, nil
 }
 
-func getGlusterLVMLabels(brick glusterutils.Brick, subvol string, stat LVMStat) []string {
-	return []string{
-		brick.Host,
-		brick.ID,
-		brick.Path,
-		brick.VolumeName,
-		subvol,
-		stat.VGName,
-		stat.Path,
-		stat.UUID,
+func getGlusterLVMLabels(brick glusterutils.Brick,
+	subvol string, stat LVMStat) prometheus.Labels {
+	return prometheus.Labels{
+		"host":       brick.Host,
+		"id":         brick.ID,
+		"brick_path": brick.Path,
+		"volume":     brick.VolumeName,
+		"subvolume":  subvol,
+		"vg_name":    stat.VGName,
+		"lv_path":    stat.Path,
+		"lv_uuid":    stat.UUID,
 	}
 }
 
-func getGlusterThinPoolLabels(brick glusterutils.Brick, vol string, subvol string, thinStat ThinPoolStat) []string {
-	return []string{
-		brick.Host,
-		thinStat.ThinPoolName,
-		thinStat.ThinPoolVGName,
-		vol,
-		subvol,
-		brick.Path,
+func getGlusterThinPoolLabels(brick glusterutils.Brick, vol string,
+	subvol string, thinStat ThinPoolStat) prometheus.Labels {
+	return prometheus.Labels{
+		"host":          brick.Host,
+		"thinpool_name": thinStat.ThinPoolName,
+		"vg_name":       thinStat.ThinPoolVGName,
+		"volume":        vol,
+		"subvolume":     subvol,
+		"brick_path":    brick.Path,
 	}
 }
 
@@ -575,19 +582,20 @@ func lvmUsage(path string) (stats []LVMStat, thinPoolStats []ThinPoolStat, err e
 	return stats, thinPoolStats, nil
 }
 
-func brickUtilization(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
+func brickUtilization(gluster glusterutils.GInterface) ([]prometheus.Metric, error) {
 	volumes, err := gluster.VolumeInfo()
 	if err != nil {
 		// Return without exporting metric in this cycle
-		return err
+		return nil, err
 	}
 
 	localPeerID, err := gluster.LocalPeerID()
 	if err != nil {
 		// Return without exporting metric in this cycle
-		return err
+		return nil, err
 	}
 
+	var metricArr []prometheus.Metric
 	for _, volume := range volumes {
 		if volume.State != glusterutils.VolumeStateStarted {
 			// Export brick metrics only if the Volume
@@ -610,43 +618,44 @@ func brickUtilization(gluster glusterutils.GInterface, ch chan<- prometheus.Metr
 						continue
 					}
 					var lbls = getGlusterBrickLabels(brick, subvol.Name)
+					var vals = MLabels(brickLabels).ValuesInOrder(lbls)
 					// Update the metrics
-					ch <- prometheus.MustNewConstMetric(
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickCapacityUsed,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.Used,
-						lbls...,
-					)
-					ch <- prometheus.MustNewConstMetric(
+						vals...,
+					))
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickCapacityFree,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.Free,
-						lbls...,
-					)
-					ch <- prometheus.MustNewConstMetric(
+						vals...,
+					))
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickCapacityTotal,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.All,
-						lbls...,
-					)
-					ch <- prometheus.MustNewConstMetric(
+						vals...,
+					))
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickInodesTotal,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.InodesAll,
-						lbls...,
-					)
-					ch <- prometheus.MustNewConstMetric(
+						vals...,
+					))
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickInodesFree,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.InodesFree,
-						lbls...,
-					)
-					ch <- prometheus.MustNewConstMetric(
+						vals...,
+					))
+					metricArr = append(metricArr, prometheus.MustNewConstMetric(
 						glusterBrickInodesUsed,
-						prometheus.CounterValue,
+						prometheus.GaugeValue,
 						usage.InodesUsed,
-						lbls...,
-					)
+						vals...,
+					))
 					// Skip exporting utilization data in case of arbiter
 					// brick to avoid wrong values when both the data bricks
 					// are down
@@ -669,78 +678,81 @@ func brickUtilization(gluster glusterutils.GInterface, ch chan<- prometheus.Metr
 					}
 					// Add metrics
 					for _, stat := range stats {
-						var lvmLbls = getGlusterLVMLabels(brick, subvol.Name, stat)
+						var lvmLabels = getGlusterLVMLabels(brick, subvol.Name, stat)
+						var valsLbls = MLabels(lvmLbls).ValuesInOrder(lvmLabels)
 						// Convert to bytes
-						ch <- prometheus.MustNewConstMetric(
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterBrickLVSize,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							stat.Size*1024*1024,
-							lvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							valsLbls...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterBrickLVPercent,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							stat.DataPercent,
-							lvmLbls...,
-						)
-						// Convert to bytes
-						ch <- prometheus.MustNewConstMetric(
+							valsLbls...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterBrickLVMetadataSize,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
+							// Convert to bytes
 							stat.MetadataSize*1024*1024,
-							lvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							valsLbls...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterBrickLVMetadataPercent,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							stat.MetadataPercent,
-							lvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							valsLbls...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterVGExtentTotal,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							stat.VGExtentTotal,
-							lvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							valsLbls...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterVGExtentAlloc,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							stat.VGExtentAlloc,
-							lvmLbls...,
-						)
+							valsLbls...,
+						))
 					}
 					for _, thinStat := range thinStats {
-						var thinLvmLbls = getGlusterThinPoolLabels(brick, volume.Name, subvol.Name, thinStat)
-						ch <- prometheus.MustNewConstMetric(
+						var thinLvmLabels = getGlusterThinPoolLabels(brick, volume.Name, subvol.Name, thinStat)
+						var thinLvmVals = MLabels(thinLvmLbls).ValuesInOrder(thinLvmLabels)
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterThinPoolDataTotal,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							thinStat.ThinPoolDataTotal*1024*1024,
-							thinLvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							thinLvmVals...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterThinPoolDataUsed,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							thinStat.ThinPoolDataUsed*1024*1024,
-							thinLvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							thinLvmVals...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterThinPoolMetadataTotal,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							thinStat.ThinPoolMetadataTotal*1024*1024,
-							thinLvmLbls...,
-						)
-						ch <- prometheus.MustNewConstMetric(
+							thinLvmVals...,
+						))
+						metricArr = append(metricArr, prometheus.MustNewConstMetric(
 							glusterThinPoolMetadataUsed,
-							prometheus.CounterValue,
+							prometheus.GaugeValue,
 							thinStat.ThinPoolMetadataUsed*1024*1024,
-							thinLvmLbls...,
-						)
+							thinLvmVals...,
+						))
 					}
 				}
 			}
 			effectiveCapacity := maxBrickUsed
 			effectiveTotalCapacity := leastBrickTotal
-			var subvolLabels = getGlusterSubvolLabels(volume.Name, subvol.Name)
+			var subvolLbls = getGlusterSubvolLabels(volume.Name, subvol.Name)
+			var subvolLblsVals = MLabels(subvolLabels).ValuesInOrder(subvolLbls)
 			if subvol.Type == glusterutils.SubvolTypeDisperse {
 				// In disperse volume data bricks contribute to the sub
 				// volume size
@@ -752,50 +764,52 @@ func brickUtilization(gluster glusterutils.GInterface, ch chan<- prometheus.Metr
 			// contains only arbiter brick on current node or no local bricks on
 			// this node
 			if effectiveCapacity > 0 {
-				ch <- prometheus.MustNewConstMetric(
+				metricArr = append(metricArr, prometheus.MustNewConstMetric(
 					glusterSubvolCapacityUsed,
-					prometheus.CounterValue,
+					prometheus.GaugeValue,
 					effectiveCapacity,
-					subvolLabels...,
-				)
+					subvolLblsVals...,
+				))
 			}
 			if effectiveTotalCapacity > 0 {
-				ch <- prometheus.MustNewConstMetric(
+				metricArr = append(metricArr, prometheus.MustNewConstMetric(
 					glusterSubvolCapacityTotal,
-					prometheus.CounterValue,
+					prometheus.GaugeValue,
 					effectiveTotalCapacity,
-					subvolLabels...,
-				)
+					subvolLblsVals...,
+				))
 			}
 		}
 	}
-	return nil
+	return metricArr, nil
 }
 
-func getBrickStatusLabels(vol string, host string, brickPath string, peerID string, pid int) []string {
-	return []string{
-		vol,
-		host,
-		brickPath,
-		peerID,
-		strconv.Itoa(pid),
+func getBrickStatusLabels(vol string, host string,
+	brickPath string, peerID string, pid int) prometheus.Labels {
+	return prometheus.Labels{
+		"volume":     vol,
+		"hostname":   host,
+		"brick_path": brickPath,
+		"peer_id":    peerID,
+		"pid":        strconv.Itoa(pid),
 	}
 }
 
-func brickStatus(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) error {
+func brickStatus(gluster glusterutils.GInterface) ([]prometheus.Metric, error) {
 	isLeader, err := gluster.IsLeader()
 	if err != nil {
 		log.WithError(err).Error("Unable to find if the current node is leader")
-		return err
+		return nil, err
 	}
 	if !isLeader {
-		return nil
+		return nil, nil
 	}
 
 	volumes, err := gluster.VolumeInfo()
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var allMetrics []prometheus.Metric
 	for _, volume := range volumes {
 		// If volume is down, the bricks should be marked down
 		var brickStatus []glusterutils.BrickStatus
@@ -824,82 +838,22 @@ func brickStatus(gluster glusterutils.GInterface, ch chan<- prometheus.Metric) e
 		}
 		for _, entry := range brickStatus {
 			labels := getBrickStatusLabels(volume.Name, entry.Hostname, entry.Path, entry.PeerID, entry.PID)
-			ch <- prometheus.MustNewConstMetric(
+			vals := MLabels(brickStatusLbls).ValuesInOrder(labels)
+			allMetrics = append(allMetrics, prometheus.MustNewConstMetric(
 				glusterBrickUp,
 				prometheus.CounterValue,
 				float64(entry.Status),
-				labels...,
-			)
+				vals...,
+			))
 		}
 	}
 
-	return nil
-}
-
-type glusterBrick struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterBrick) GetName() string {
-	return "gluster_brick"
-}
-
-func (c *glusterBrick) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterBrick) Describe(ch chan<- *prometheus.Desc) {
-	ch <- glusterBrickCapacityUsed
-	ch <- glusterBrickCapacityFree
-	ch <- glusterBrickCapacityTotal
-	ch <- glusterBrickInodesTotal
-	ch <- glusterBrickInodesFree
-	ch <- glusterBrickInodesUsed
-	ch <- glusterSubvolCapacityUsed
-	ch <- glusterSubvolCapacityTotal
-	ch <- glusterBrickLVSize
-	ch <- glusterBrickLVPercent
-	ch <- glusterBrickLVMetadataSize
-	ch <- glusterBrickLVMetadataPercent
-	ch <- glusterVGExtentTotal
-	ch <- glusterVGExtentAlloc
-	ch <- glusterThinPoolDataTotal
-	ch <- glusterThinPoolDataUsed
-	ch <- glusterThinPoolMetadataTotal
-	ch <- glusterThinPoolMetadataUsed
-}
-
-func (c *glusterBrick) Collect(ch chan<- prometheus.Metric) {
-	if err := brickUtilization(c.gi, ch); err != nil {
-		log.WithError(err).Warn("failed to get brick utilization")
-	}
-}
-
-type glusterBrickStatus struct {
-	gi glusterutils.GInterface
-}
-
-func (*glusterBrickStatus) GetName() string {
-	return "gluster_brick_status"
-}
-
-func (c *glusterBrickStatus) SetGluster(gi glusterutils.GInterface) {
-	c.gi = gi
-}
-
-func (*glusterBrickStatus) Describe(ch chan<- *prometheus.Desc) {
-	ch <- glusterBrickUp
-}
-
-func (c *glusterBrickStatus) Collect(ch chan<- prometheus.Metric) {
-	if err := brickStatus(c.gi, ch); err != nil {
-		log.WithError(err).Warn("failed to get brick status")
-	}
+	return allMetrics, nil
 }
 
 func init() {
-	col := glusterBrick{}
-	statuscol := glusterBrickStatus{}
-	registerCollector(&col)
-	registerCollector(&statuscol)
+	gBrickUtilMP := newGMetricGenProvider("gluster_brick", brickUtilization, brickDescs)
+	registerNewGMetricGenProvider(gBrickUtilMP)
+	gBrickStatusMP := newGMetricGenProvider("gluster_brick_status", brickStatus, brickStatusDescs)
+	registerNewGMetricGenProvider(gBrickStatusMP)
 }
